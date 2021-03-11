@@ -26,10 +26,15 @@ client.on('message', msg => {
         //TODO: once finished, ask the user if they want to find a match now.
         msg.reply('This feature has not been implemented yet. This would normally ask you questions to set up your profile');
     }
-    if (msg.content === 'report') {
-        //TODO: ask what the tag of the user is.
-        //TODO: find that user, if exists add the reporter and reported to db.
-        msg.reply('This feature has not been implemented yet. This would normally ask you who you want to report');
+    if (msg.content.startsWith('report')) {
+        let user = msg.content.slice(7);
+        if(user) {
+            //TODO: add the reporter and reported to db.
+            msg.reply('Reported ' + user);
+        } else {
+            msg.reply('You did not mention the user to report');
+        }
+        msg.reply('This feature has not been implemented yet. This would normally report the person you have tagged');
     }
 });
 
