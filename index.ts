@@ -5,6 +5,8 @@ const config = require('./conf.json');
 // TODO: move prefix to config
 const prefix = '!';
 
+client.login(config.token);
+
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
 });
@@ -43,5 +45,3 @@ client.on('message', msg => {
         msg.reply('This feature has not been implemented yet. This would normally report the person you have tagged');
     }
 });
-
-client.login(config.token);
