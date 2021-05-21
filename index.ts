@@ -17,6 +17,10 @@ client.on('message', async (msg) => {
     const args: string[] = msg.content.slice(prefix.length).trim().split(/ +/);
     const command: string = args.shift().toLowerCase();
 
+    if (command === 'ping') {
+        return await msg.reply('Pong!');
+    }
+
     if (command === 'register') {
         return await startRegistration(msg);
     }
