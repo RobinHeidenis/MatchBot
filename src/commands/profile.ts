@@ -1,6 +1,6 @@
 import { Message } from 'discord.js';
 import { categories, createEmbed, promptRegistration } from '../helpers';
-import { getUser, userExists } from '../user-manager';
+import { getUser, userExists } from '../data-manager';
 
 export = {
     name: 'profile',
