@@ -12,7 +12,7 @@ export function addUser(user: UserData) {
     if (data.users.find(({ id }) => id === user.id)) return;
 
     data.users.push(user);
-    fs.writeFileSync('./users.json', JSON.stringify(data, undefined, 4));
+    fs.writeFileSync('./data.json', JSON.stringify(data, undefined, 4));
 }
 
 export function updateUser(userToUpdate: UserData) {
@@ -23,7 +23,7 @@ export function updateUser(userToUpdate: UserData) {
     const data = readData();
     data.users = data.users.filter(({ id }) => id !== user.id);
     data.users.push(user);
-    fs.writeFileSync('./users.json', JSON.stringify(data, undefined, 4));
+    fs.writeFileSync('./data.json', JSON.stringify(data, undefined, 4));
 }
 
 export function addMatch(userOne: string, userTwo: string) {
@@ -32,7 +32,7 @@ export function addMatch(userOne: string, userTwo: string) {
         match: [userOne, userTwo],
         date: Date.now(),
     });
-    fs.writeFileSync('./users.json', JSON.stringify(data, undefined, 4));
+    fs.writeFileSync('./data.json', JSON.stringify(data, undefined, 4));
 }
 
 /** Determines whether two users have already been matched
@@ -54,7 +54,7 @@ function cleanseUser(user: UserData): UserData {
 }
 
 function readData(): Data {
-    const file = fs.readFileSync('./users.json', 'utf8');
+    const file = fs.readFileSync('./data.json', 'utf8');
     return JSON.parse(file.toString()) as Data;
 }
 
