@@ -1,7 +1,7 @@
 import { Message } from 'discord.js';
 import { getUser, getUsers, UserData, userExists } from '../user-manager';
-import { matchingElements, sleep } from '../utils';
-import { promptRegistration } from '../helpers';
+import { sleep } from '../utils';
+import { categories, promptRegistration } from '../helpers';
 
 export = {
     name: 'match',
@@ -29,21 +29,28 @@ async function findMatch(message: Message) {
     if (!match) return await sentMsg.edit('Ik heb helaas geen match voor je kunnen vinden ☹');
 
     await sentMsg.edit(
-        `Match gevonden! Jij en <@${match.id}> zijn een goede match voor elkaar! Jullie hebben ${match.matchCount} dingen in common. Stuur ze een bericht :)`
+        `Match gevonden! Jij en <@${
+            match.id
+        }> zijn een goede match voor elkaar! Jullie hebben beide ${match.matchingCategories
+            .map((id) => `\`${categories[id]}\``)
+            .join(' en ')} geselecteerd als categorie!.\nStuur ze een bericht :)`
     );
 
-    // TODO: DM the match to let them know they should expect a message soon
+    const matchedUser = message.client.users.cache.get(match.id)!;
+    await matchedUser.send(
+        `Je bent gematcht met <@${user.id}>!\nHun hobbies zijn \`${user.hobbies}\` en ze vinden het leuk om te praten over \`${user.topics}\``
+    );
 }
 
 /** Calculates the amount of matching categories for each user and sorts them descending
  * @returns The user with the highest amount of matching categories */
-function matchUser({ categories }: UserData, userPool: UserData[]): UserData & { matchCount: number } {
+function matchUser({ categories }: UserData, userPool: UserData[]): UserData & { matchingCategories: number[] } {
     const matches = userPool
         .map((potentialMatch) => ({
             ...potentialMatch,
-            matchCount: matchingElements(categories!, potentialMatch.categories!),
+            matchingCategories: categories!.filter((el) => potentialMatch.categories?.includes(el)),
         }))
-        .sort((a, b) => b.matchCount - a.matchCount);
+        .sort((a, b) => b.matchingCategories.length - a.matchingCategories.length);
     // TODO: if this user profile has already been suggested, ignore it and pick the next best.
     return matches[0];
 }
