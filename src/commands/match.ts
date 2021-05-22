@@ -1,5 +1,5 @@
 import { Message } from 'discord.js';
-import { getUser, getUsers, updateUser, userExists } from '../user-manager';
+import { addMatch, getUser, getUsers, matchExists, userExists } from '../data-manager';
 import { sleep } from '../utils';
 import { categories, promptRegistration } from '../helpers';
 import { UserData } from '../types';
@@ -46,7 +46,7 @@ async function findMatch(message: Message) {
     );
 }
 
-/** Calculates the amount of matching categories for each user and sorts them descending
+/** Determines the matching categories for each user in the pool the user hasn't matched with yet and sorts them descending
  * @returns The user with the highest amount of matching categories */
 function matchUser(user: UserData, userPool: UserData[]): (UserData & { matchingCategories: number[] }) | undefined {
     const matches = userPool
@@ -54,15 +54,12 @@ function matchUser(user: UserData, userPool: UserData[]): (UserData & { matching
             ...potentialMatch,
             matchingCategories: user.categories!.filter((el) => potentialMatch.categories?.includes(el)),
         }))
-        .filter(({ id, matches }) => !matches.includes(user.id) && !user.matches.includes(id))
+        .filter(({ id }) => !matchExists(user.id, id))
         .sort((a, b) => b.matchingCategories.length - a.matchingCategories.length);
 
-    const matched = matches[0];
-    if (!matched) return undefined;
+    const matchedUser = matches[0];
+    if (!matchedUser) return undefined;
 
-    user.matches.push(matched.id);
-    matched.matches.push(user.id);
-    updateUser(matched);
-    updateUser(user);
-    return matched;
+    addMatch(user.id, matchedUser.id);
+    return matchedUser;
 }

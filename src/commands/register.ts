@@ -1,5 +1,5 @@
 import { Message, MessageEmbed, MessageReaction, User } from 'discord.js';
-import { addUser, userExists } from '../user-manager';
+import { addUser, userExists } from '../data-manager';
 import { categories } from '../helpers';
 import { UserData } from '../types';
 
