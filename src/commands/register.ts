@@ -30,7 +30,7 @@ async function startRegistration(message: Message) {
             ' Misbruik van deze bot of van mensen die je via deze bot ontmoet, wordt niet getolereerd en je kan volledig verbannen worden van het gebruik van deze bot. Je kan `!report gebruiker#1234` typen om een specifieke gebruiker te rapporteren. Veel plezier!'
     );
 
-    return await sendQuestion(message, { id: message.author.id, categories: [] });
+    return await sendQuestion(message, { id: message.author.id, categories: [], matches: [] });
 }
 
 async function sendQuestion(message: Message, userData: UserData, questionNumber = 0) {

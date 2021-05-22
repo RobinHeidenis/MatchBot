@@ -15,4 +15,5 @@ interface UserData {
     categories?: number[];
     hobbies?: string;
     topics?: string;
+    matches: string[];
 }

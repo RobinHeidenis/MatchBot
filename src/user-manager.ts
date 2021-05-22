@@ -14,6 +14,16 @@ export function addUser(user: UserData) {
     fs.writeFileSync('./users.json', JSON.stringify(data, undefined, 4));
 }
 
+export function updateUser(user: UserData) {
+    if (!userExists(user)) {
+        return addUser(user);
+    }
+    const data = readUsers();
+    data.users = data.users.filter(({ id }) => id !== user.id);
+    data.users.push(user);
+    fs.writeFileSync('./users.json', JSON.stringify(data, undefined, 4));
+}
+
 function readUsers(): Data {
     const file = fs.readFileSync('./users.json', 'utf8');
     return JSON.parse(file.toString()) as Data;
@@ -27,7 +37,7 @@ export function getUser(userId: string): UserData | undefined {
     return readUsers().users.find((user) => user.id === userId);
 }
 
-export function userExists({ id }: User): boolean {
+export function userExists({ id }: User | UserData): boolean {
     const user = getUser(id);
     return user !== undefined;
 }

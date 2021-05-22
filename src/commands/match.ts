@@ -1,5 +1,5 @@
 import { Message } from 'discord.js';
-import { getUser, getUsers, userExists } from '../user-manager';
+import { getUser, getUsers, updateUser, userExists } from '../user-manager';
 import { sleep } from '../utils';
 import { categories, promptRegistration } from '../helpers';
 import { UserData } from '../types';
@@ -27,7 +27,10 @@ async function findMatch(message: Message) {
     await sleep(1500); // fake delay
 
     const match = matchUser(user, users);
-    if (!match) return await sentMsg.edit('Ik heb helaas geen match voor je kunnen vinden ☹');
+    if (!match)
+        return await sentMsg.edit(
+            'Ik heb helaas geen nieuwe match voor je kunnen vinden, je hebt iedereen al ontmoet ☹\nProbeer het later nog een keer, misschien zijn er dan nieuwe mensen om te leren kennen.'
+        );
 
     await sentMsg.edit(
         `Match gevonden! Jij en <@${
@@ -45,13 +48,23 @@ async function findMatch(message: Message) {
 
 /** Calculates the amount of matching categories for each user and sorts them descending
  * @returns The user with the highest amount of matching categories */
-function matchUser({ categories }: UserData, userPool: UserData[]): UserData & { matchingCategories: number[] } {
+function matchUser(user: UserData, userPool: UserData[]): (UserData & { matchingCategories: number[] }) | undefined {
     const matches = userPool
         .map((potentialMatch) => ({
             ...potentialMatch,
-            matchingCategories: categories!.filter((el) => potentialMatch.categories?.includes(el)),
+            matchingCategories: user.categories!.filter((el) => potentialMatch.categories?.includes(el)),
         }))
         .sort((a, b) => b.matchingCategories.length - a.matchingCategories.length);
-    // TODO: if this user profile has already been suggested, ignore it and pick the next best.
-    return matches[0];
+
+    let matchIndex = 0;
+    let matched = matches[matchIndex];
+
+    while (matched && user.matches.includes(matched.id)) {
+        matched = matches[matchIndex++];
+    }
+    if (!matched) return undefined;
+
+    user.matches.push(matched.id);
+    updateUser(user);
+    return matched;
 }
