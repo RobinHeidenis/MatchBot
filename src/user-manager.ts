@@ -1,21 +1,25 @@
 import * as fs from 'fs';
 import { User } from 'discord.js';
+import { UserData } from './types';
 
 interface Data {
     users: UserData[];
-}
-
-export interface UserData {
-    id: string;
-    categories?: number[];
-    hobbies?: string;
-    topics?: string;
 }
 
 export function addUser(user: UserData) {
     const data = readUsers();
     if (data.users.find(({ id }) => id === user.id)) return;
 
+    data.users.push(user);
+    fs.writeFileSync('./users.json', JSON.stringify(data, undefined, 4));
+}
+
+export function updateUser(user: UserData) {
+    if (!userExists(user)) {
+        return addUser(user);
+    }
+    const data = readUsers();
+    data.users = data.users.filter(({ id }) => id !== user.id);
     data.users.push(user);
     fs.writeFileSync('./users.json', JSON.stringify(data, undefined, 4));
 }
@@ -33,7 +37,7 @@ export function getUser(userId: string): UserData | undefined {
     return readUsers().users.find((user) => user.id === userId);
 }
 
-export function userExists({ id }: User): boolean {
+export function userExists({ id }: User | UserData): boolean {
     const user = getUser(id);
     return user !== undefined;
 }
