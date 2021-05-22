@@ -1,5 +1,5 @@
-import { Message, MessageEmbed, User } from 'discord.js';
-import { getUsers, addUser } from './user-manager';
+import { Message, MessageEmbed, MessageReaction, User } from 'discord.js';
+import { getUsers, addUser, UserData } from './user-manager';
 import { sleep } from './utils';
 
 async function startRegistration(message: Message) {
@@ -9,10 +9,10 @@ async function startRegistration(message: Message) {
             ' Misbruik van deze bot of van mensen die je via deze bot ontmoet, wordt niet getolereerd en je kan volledig verbannen worden van het gebruik van deze bot. Je kan `!report gebruiker#1234` typen om een specifieke gebruiker te rapporteren. Veel plezier!'
     );
 
-    return await sendQuestion(message);
+    return await sendQuestion(message, { id: message.author.id, categories: [] });
 }
 
-async function sendQuestion(message: Message, questionNumber = 0) {
+async function sendQuestion(message: Message, userData: UserData, questionNumber = 0) {
     // TODO: Increase time limit
     const questions = [
         {
@@ -20,12 +20,12 @@ async function sendQuestion(message: Message, questionNumber = 0) {
             answers: ['Iemand om mee te gamen', 'Gewoon gezellig praten', 'Muziek luisteren/maken'],
             timeLimit: 15000,
         },
-        { question: 'Wat zijn je hobbies?' },
-        { question: 'Waarover praat jij het liefst?' },
+        { question: 'Wat zijn je hobbies?', dataKey: 'hobbies' },
+        { question: 'Waarover praat jij het liefst?', dataKey: 'topics' },
     ];
 
-    if (questionNumber > questions.length - 1) return await finishRegistration(message.author);
-    const { question, answers, timeLimit } = questions[questionNumber];
+    if (questionNumber > questions.length - 1) return await finishRegistration(message.author, userData);
+    const { question, dataKey, answers, timeLimit } = questions[questionNumber];
 
     const embed = new MessageEmbed().setTitle('Een vraag voor jou').setDescription(question);
     if (answers) {
@@ -40,6 +40,7 @@ async function sendQuestion(message: Message, questionNumber = 0) {
 
     if (answers) {
         const reactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣'];
+
         await Promise.all(reactions.slice(0, answers.length).map(async (emoji) => await sentMsg.react(emoji)));
         const collector = sentMsg.createReactionCollector(({ emoji }) => reactions.includes(emoji.name), {
             time: timeLimit,
@@ -51,17 +52,23 @@ async function sendQuestion(message: Message, questionNumber = 0) {
 
         collector.on('end', (collected) => {
             console.log(`Collected ${collected.size} items`);
-            sendQuestion(message, questionNumber + 1);
+            userData.categories = collected.map(
+                (reaction: MessageReaction) => reactions.indexOf(reaction.emoji.name) + 1
+            );
+            sendQuestion(message, userData, questionNumber + 1);
         });
     } else {
         await sentMsg.channel
             .awaitMessages((response) => response.content.length > 0, { max: 1 })
-            .then(() => sendQuestion(message, questionNumber + 1));
+            .then((collected) => {
+                userData[dataKey] = collected.first().content;
+                sendQuestion(message, userData, questionNumber + 1);
+            });
     }
 }
 
-async function finishRegistration(author: User) {
-    addUser(author.id);
+async function finishRegistration(author: User, userData: UserData) {
+    addUser(userData);
     return await author.send(
         'Je registratie is voltooid. Vanaf nu heb je de mogelijkheid om via mij nieuwe mensen te ontmoeten. Gebruik `!match` om een match te vinden.'
     );
@@ -93,7 +100,7 @@ async function findMatch(message: Message) {
     //TODO: compare user to other profiles, return the best one's username to the user.
     //TODO: if this user profile has already been suggested, ignore it and pick the next best.
     //TODO: if the user doesn't have a profile yet, ask to set it up.
-    const matches = getUsers().filter((match) => match !== message.author.id);
+    const matches = getUsers().filter(({ id }) => id !== message.author.id);
     if (!matches.length) {
         return await message.reply('Ik heb niemand in mijn lijst met mensen staan 😭.');
     }

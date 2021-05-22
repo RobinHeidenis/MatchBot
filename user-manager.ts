@@ -1,22 +1,29 @@
 import * as fs from 'fs';
 
 interface Data {
-  users: string[];
+    users: UserData[];
 }
 
-export function addUser(user: string) {
-  const data = readUsers();
-  if (data.users.includes(user)) return;
+export interface UserData {
+    id: string;
+    categories?: number[];
+    hobbies?: string;
+    topics?: string;
+}
 
-  data.users.push(user);
-  fs.writeFileSync('./users.json', JSON.stringify(data, undefined, 4));
+export function addUser(user: UserData) {
+    const data = readUsers();
+    if (data.users.find(({ id }) => id === user.id)) return;
+
+    data.users.push(user);
+    fs.writeFileSync('./users.json', JSON.stringify(data, undefined, 4));
 }
 
 function readUsers(): Data {
-  const file = fs.readFileSync('./users.json', 'utf8');
-  return JSON.parse(file.toString()) as Data;
+    const file = fs.readFileSync('./users.json', 'utf8');
+    return JSON.parse(file.toString()) as Data;
 }
 
-export function getUsers(): string[] {
-  return readUsers().users;
+export function getUsers(): UserData[] {
+    return readUsers().users;
 }
