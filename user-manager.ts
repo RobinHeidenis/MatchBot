@@ -27,3 +27,7 @@ function readUsers(): Data {
 export function getUsers(): UserData[] {
     return readUsers().users;
 }
+
+export function getUser(userId: string): UserData {
+    return readUsers().users.find((user) => user.id === userId);
+}

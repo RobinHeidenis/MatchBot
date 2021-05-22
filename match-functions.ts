@@ -1,6 +1,6 @@
 import { Message, MessageEmbed, MessageReaction, User } from 'discord.js';
-import { getUsers, addUser, UserData } from './user-manager';
-import { sleep } from './utils';
+import { getUsers, addUser, UserData, getUser } from './user-manager';
+import { matchingElements, sleep } from './utils';
 
 async function startRegistration(message: Message) {
     await message.author.send(
@@ -97,11 +97,14 @@ function createEmbed(title: string, description: string, ...fields: { name: stri
 }
 
 async function findMatch(message: Message) {
-    //TODO: compare user to other profiles, return the best one's username to the user.
-    //TODO: if this user profile has already been suggested, ignore it and pick the next best.
-    //TODO: if the user doesn't have a profile yet, ask to set it up.
-    const matches = getUsers().filter(({ id }) => id !== message.author.id);
-    if (!matches.length) {
+    const user = getUser(message.author.id);
+    if (!user) {
+        return message.author.send(
+            'Je moet je eerst registreren voordat je mensen kunt zoeken. Gebruik `!register` om te beginnen met jouw registratie.'
+        );
+    }
+    const users = getUsers().filter(({ id }) => id !== message.author.id);
+    if (!users.length) {
         return await message.reply('Ik heb niemand in mijn lijst met mensen staan 😭.');
     }
 
