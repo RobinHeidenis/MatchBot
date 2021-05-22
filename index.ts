@@ -1,4 +1,4 @@
-import { findMatch, privacy, report, startRegistration } from './match-functions';
+import { findMatch, privacy, profile, report, startRegistration } from './match-functions';
 
 require('dotenv').config();
 const Discord = require('discord.js');
@@ -34,9 +34,7 @@ client.on('message', async (msg) => {
     }
 
     if (command === 'profile') {
-        //TODO: fetch user profile from db, reply it to the user.
-        //TODO: if the user doesn't have a profile yet, ask to set it up.
-        return msg.reply('This feature has not been implemented yet. This would normally show your profile');
+        return await profile(msg);
     }
 
     if (command.startsWith('report')) {

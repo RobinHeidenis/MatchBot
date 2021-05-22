@@ -1,8 +1,25 @@
 import { Message, MessageEmbed, MessageReaction, User } from 'discord.js';
-import { getUsers, addUser, UserData, getUser } from './user-manager';
+import { getUsers, addUser, UserData, getUser, userExists } from './user-manager';
 import { matchingElements, sleep } from './utils';
 
+const categories = {
+    1: 'Iemand om mee te gamen',
+    2: 'Gewoon gezellig praten',
+    3: 'Muziek luisteren/maken',
+};
+
+async function promptRegistration(message: Message) {
+    return message.author.send(
+        'Je moet je eerst registreren voordat je mensen kunt zoeken. Gebruik `!register` om te beginnen met jouw registratie.'
+    );
+}
+
 async function startRegistration(message: Message) {
+    if (userExists(message.author)) {
+        return message.author.send(
+            'Je bent al geregistreerd. Gebruik `!match` om te beginnen met nieuwe mensen ontmoeten!'
+        );
+    }
     await message.author.send(
         'Hi! ik ben LonelinessFighter en ik ben hier om jou met een andere persoon te matchen die dezelfde interesses als jij heeft.' +
             ' Gebruik `!privacy` als je meer wilt weten over de gegevens die ik verzamel en wat ik daarmee doe. Je kan `!help` typen om de hulppagina te zien.' +
@@ -17,7 +34,7 @@ async function sendQuestion(message: Message, userData: UserData, questionNumber
     const questions = [
         {
             question: 'Waar zoek je momenteel naar?',
-            answers: ['Iemand om mee te gamen', 'Gewoon gezellig praten', 'Muziek luisteren/maken'],
+            answers: Object.values(categories),
             timeLimit: 15000,
         },
         { question: 'Wat zijn je hobbies?', dataKey: 'hobbies' },
@@ -97,12 +114,11 @@ function createEmbed(title: string, description: string, ...fields: { name: stri
 }
 
 async function findMatch(message: Message) {
-    const user = getUser(message.author.id);
-    if (!user) {
-        return message.author.send(
-            'Je moet je eerst registreren voordat je mensen kunt zoeken. Gebruik `!register` om te beginnen met jouw registratie.'
-        );
+    if (!userExists(message.author)) {
+        return await promptRegistration(message);
     }
+    const user = getUser(message.author.id);
+
     const users = getUsers().filter(({ id }) => id !== message.author.id);
     if (!users.length) {
         return await message.reply('Ik heb niemand in mijn lijst met mensen staan 😭.');
@@ -144,4 +160,29 @@ async function privacy(message: Message) {
     return await message.author.send(embed);
 }
 
-export { privacy, findMatch, report, startRegistration };
+async function profile(message: Message) {
+    if (!userExists(message.author)) {
+        return await promptRegistration(message);
+    }
+    const user = getUser(message.author.id);
+
+    const embed = createEmbed(
+        'Jouw profiel',
+        'De informatie die je tijdens je registratie hebt ingevoerd.',
+        {
+            name: 'Categorieën',
+            value: user.categories.map((categoryId) => categories[categoryId]).join(', '),
+        },
+        {
+            name: 'Hobbies',
+            value: user.hobbies,
+        },
+        {
+            name: 'Onderwerpen waar je graag over praat',
+            value: user.topics,
+        }
+    );
+    return message.author.send(embed);
+}
+
+export { privacy, findMatch, report, startRegistration, profile };
