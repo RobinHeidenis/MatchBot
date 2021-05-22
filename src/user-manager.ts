@@ -14,7 +14,8 @@ export function addUser(user: UserData) {
     fs.writeFileSync('./users.json', JSON.stringify(data, undefined, 4));
 }
 
-export function updateUser(user: UserData) {
+export function updateUser(userToUpdate: UserData) {
+    const user = cleanseUser(userToUpdate);
     if (!userExists(user)) {
         return addUser(user);
     }
@@ -22,6 +23,16 @@ export function updateUser(user: UserData) {
     data.users = data.users.filter(({ id }) => id !== user.id);
     data.users.push(user);
     fs.writeFileSync('./users.json', JSON.stringify(data, undefined, 4));
+}
+
+function cleanseUser(user: UserData): UserData {
+    return {
+        id: user.id,
+        categories: user.categories,
+        hobbies: user.hobbies,
+        topics: user.topics,
+        matches: user.matches,
+    };
 }
 
 function readUsers(): Data {

@@ -54,17 +54,15 @@ function matchUser(user: UserData, userPool: UserData[]): (UserData & { matching
             ...potentialMatch,
             matchingCategories: user.categories!.filter((el) => potentialMatch.categories?.includes(el)),
         }))
+        .filter(({ id, matches }) => !matches.includes(user.id) && !user.matches.includes(id))
         .sort((a, b) => b.matchingCategories.length - a.matchingCategories.length);
 
-    let matchIndex = 0;
-    let matched = matches[matchIndex];
-
-    while (matched && user.matches.includes(matched.id)) {
-        matched = matches[matchIndex++];
-    }
+    const matched = matches[0];
     if (!matched) return undefined;
 
     user.matches.push(matched.id);
+    matched.matches.push(user.id);
+    updateUser(matched);
     updateUser(user);
     return matched;
 }
