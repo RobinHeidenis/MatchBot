@@ -1,6 +1,7 @@
 import { Message, MessageEmbed, MessageReaction, User } from 'discord.js';
-import { addUser, UserData, userExists } from '../user-manager';
+import { addUser, userExists } from '../user-manager';
 import { categories } from '../helpers';
+import { UserData } from '../types';
 
 interface RegistrationQuestion {
     question: string;

@@ -1,7 +1,8 @@
 import { Message } from 'discord.js';
-import { getUser, getUsers, UserData, userExists } from '../user-manager';
+import { getUser, getUsers, userExists } from '../user-manager';
 import { sleep } from '../utils';
 import { categories, promptRegistration } from '../helpers';
+import { UserData } from '../types';
 
 export = {
     name: 'match',

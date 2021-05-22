@@ -1,15 +1,9 @@
 import * as fs from 'fs';
 import { User } from 'discord.js';
+import { UserData } from './types';
 
 interface Data {
     users: UserData[];
-}
-
-export interface UserData {
-    id: string;
-    categories?: number[];
-    hobbies?: string;
-    topics?: string;
 }
 
 export function addUser(user: UserData) {

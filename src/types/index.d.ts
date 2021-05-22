@@ -9,3 +9,10 @@ interface Command {
 interface BotClient extends Client {
     commands: Collection<string, Command>;
 }
+
+interface UserData {
+    id: string;
+    categories?: number[];
+    hobbies?: string;
+    topics?: string;
+}
