@@ -19,3 +19,8 @@ interface UserData {
 }
 
 type Match = [userOne: string, userTwo: string];
+
+interface MatchInfo {
+    user: string;
+    date: Date;
+}

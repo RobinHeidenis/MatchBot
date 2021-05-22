@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { User } from 'discord.js';
-import { Match, UserData } from './types';
+import { Match, MatchInfo, UserData } from './types';
 
 interface Data {
     users: UserData[];
@@ -69,4 +69,16 @@ export function getUser(userId: string): UserData | undefined {
 export function userExists({ id }: User | UserData): boolean {
     const user = getUser(id);
     return user !== undefined;
+}
+
+export function getMatches(userId: string): MatchInfo[] {
+    const { matches } = readData();
+    return matches
+        .filter(({ match }) => match.includes(userId))
+        .map((matchInfo) => {
+            return {
+                user: matchInfo.match.find((id) => id !== userId)!,
+                date: new Date(matchInfo.date),
+            };
+        });
 }
