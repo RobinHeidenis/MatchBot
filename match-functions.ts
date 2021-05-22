@@ -1,6 +1,6 @@
-import { Message, MessageEmbed, User } from 'discord.js';
-import { getUsers, addUser } from './user-manager';
-import { sleep } from './utils';
+import { Message, MessageEmbed, MessageReaction, User } from 'discord.js';
+import { getUsers, addUser, UserData, getUser } from './user-manager';
+import { matchingElements, sleep } from './utils';
 
 async function startRegistration(message: Message) {
     await message.author.send(
@@ -9,10 +9,10 @@ async function startRegistration(message: Message) {
             ' Misbruik van deze bot of van mensen die je via deze bot ontmoet, wordt niet getolereerd en je kan volledig verbannen worden van het gebruik van deze bot. Je kan `!report gebruiker#1234` typen om een specifieke gebruiker te rapporteren. Veel plezier!'
     );
 
-    return await sendQuestion(message);
+    return await sendQuestion(message, { id: message.author.id, categories: [] });
 }
 
-async function sendQuestion(message: Message, questionNumber = 0) {
+async function sendQuestion(message: Message, userData: UserData, questionNumber = 0) {
     // TODO: Increase time limit
     const questions = [
         {
@@ -20,12 +20,12 @@ async function sendQuestion(message: Message, questionNumber = 0) {
             answers: ['Iemand om mee te gamen', 'Gewoon gezellig praten', 'Muziek luisteren/maken'],
             timeLimit: 15000,
         },
-        { question: 'Wat zijn je hobbies?' },
-        { question: 'Waarover praat jij het liefst?' },
+        { question: 'Wat zijn je hobbies?', dataKey: 'hobbies' },
+        { question: 'Waarover praat jij het liefst?', dataKey: 'topics' },
     ];
 
-    if (questionNumber > questions.length - 1) return await finishRegistration(message.author);
-    const { question, answers, timeLimit } = questions[questionNumber];
+    if (questionNumber > questions.length - 1) return await finishRegistration(message.author, userData);
+    const { question, dataKey, answers, timeLimit } = questions[questionNumber];
 
     const embed = new MessageEmbed().setTitle('Een vraag voor jou').setDescription(question);
     if (answers) {
@@ -40,6 +40,7 @@ async function sendQuestion(message: Message, questionNumber = 0) {
 
     if (answers) {
         const reactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣'];
+
         await Promise.all(reactions.slice(0, answers.length).map(async (emoji) => await sentMsg.react(emoji)));
         const collector = sentMsg.createReactionCollector(({ emoji }) => reactions.includes(emoji.name), {
             time: timeLimit,
@@ -51,17 +52,23 @@ async function sendQuestion(message: Message, questionNumber = 0) {
 
         collector.on('end', (collected) => {
             console.log(`Collected ${collected.size} items`);
-            sendQuestion(message, questionNumber + 1);
+            userData.categories = collected.map(
+                (reaction: MessageReaction) => reactions.indexOf(reaction.emoji.name) + 1
+            );
+            sendQuestion(message, userData, questionNumber + 1);
         });
     } else {
         await sentMsg.channel
             .awaitMessages((response) => response.content.length > 0, { max: 1 })
-            .then(() => sendQuestion(message, questionNumber + 1));
+            .then((collected) => {
+                userData[dataKey] = collected.first().content;
+                sendQuestion(message, userData, questionNumber + 1);
+            });
     }
 }
 
-async function finishRegistration(author: User) {
-    addUser(author.id);
+async function finishRegistration(author: User, userData: UserData) {
+    addUser(userData);
     return await author.send(
         'Je registratie is voltooid. Vanaf nu heb je de mogelijkheid om via mij nieuwe mensen te ontmoeten. Gebruik `!match` om een match te vinden.'
     );
@@ -90,21 +97,41 @@ function createEmbed(title: string, description: string, ...fields: { name: stri
 }
 
 async function findMatch(message: Message) {
-    //TODO: compare user to other profiles, return the best one's username to the user.
-    //TODO: if this user profile has already been suggested, ignore it and pick the next best.
-    //TODO: if the user doesn't have a profile yet, ask to set it up.
-    const matches = getUsers().filter((match) => match !== message.author.id);
-    if (!matches.length) {
+    const user = getUser(message.author.id);
+    if (!user) {
+        return message.author.send(
+            'Je moet je eerst registreren voordat je mensen kunt zoeken. Gebruik `!register` om te beginnen met jouw registratie.'
+        );
+    }
+    const users = getUsers().filter(({ id }) => id !== message.author.id);
+    if (!users.length) {
         return await message.reply('Ik heb niemand in mijn lijst met mensen staan 😭.');
     }
 
-    const match = matches[Math.floor(Math.random() * matches.length)];
+    const sentMsg = await message.author.send('Bezig met zoeken...');
+    await sleep(1500); // fake delay
 
-    const sentMsg = await message.author.send('Bezig met zoeken..');
-    await sleep(1500);
-    return await sentMsg.edit(
-        `Match gevonden! Jij en <@${match}> zijn een goede match voor elkaar! Stuur ze een bericht :)`
+    const match = matchUser(user, users);
+    if (!match) return await sentMsg.edit('Ik heb helaas geen match voor je kunnen vinden ☹');
+
+    await sentMsg.edit(
+        `Match gevonden! Jij en <@${match.id}> zijn een goede match voor elkaar! Jullie hebben ${match.matchCount} dingen in common. Stuur ze een bericht :)`
     );
+
+    // TODO: DM the match to let them know they should expect a message soon
+}
+
+/** Calculates the amount of matching categories for each user and sorts them descending
+ * @returns The user with the highest amount of matching categories */
+function matchUser({ categories }: UserData, userPool: UserData[]): UserData & { matchCount: number } {
+    const matches = userPool
+        .map((potentialMatch) => ({
+            ...potentialMatch,
+            matchCount: matchingElements(categories, potentialMatch.categories),
+        }))
+        .sort((a, b) => b.matchCount - a.matchCount);
+    // TODO: if this user profile has already been suggested, ignore it and pick the next best.
+    return matches[0];
 }
 
 async function privacy(message: Message) {
