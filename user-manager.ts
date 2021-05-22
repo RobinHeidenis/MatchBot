@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import { User } from 'discord.js';
 
 interface Data {
     users: UserData[];
@@ -30,4 +31,9 @@ export function getUsers(): UserData[] {
 
 export function getUser(userId: string): UserData {
     return readUsers().users.find((user) => user.id === userId);
+}
+
+export function userExists({ id }: User): boolean {
+    const user = getUser(id);
+    return user !== undefined;
 }
