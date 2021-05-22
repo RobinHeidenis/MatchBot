@@ -92,10 +92,10 @@ async function finishRegistration(author: User, userData: UserData) {
 }
 
 async function report(message: Message) {
-    let user = message.content.slice(7);
-    if (user) {
+    let userToReport = message.content.slice(7);
+    if (userToReport) {
         //TODO: add the reporter and reported to db.
-        return await message.reply(`Je hebt ${user} succesvol gerapporteerd.`);
+        return await message.reply(`Je hebt ${userToReport} succesvol gerapporteerd.`);
     } else {
         return await message.reply('You did not mention the user to report');
     }
