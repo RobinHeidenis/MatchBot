@@ -1,8 +1,15 @@
-import { findMatch, privacy, profile, report, startRegistration } from './match-functions';
-
 require('dotenv').config();
+import * as fs from 'fs';
 const Discord = require('discord.js');
 const client = new Discord.Client();
+client.commands = new Discord.Collection();
+
+const commandFiles = fs.readdirSync('./commands').filter((file) => file.endsWith('.ts'));
+for (const file of commandFiles) {
+    const command = require(`./commands/${file}`);
+    client.commands.set(command.name, command);
+}
+
 const prefix = '!';
 
 client.login(process.env.TOKEN);
@@ -17,27 +24,11 @@ client.on('message', async (msg) => {
     const args: string[] = msg.content.slice(prefix.length).trim().split(/ +/);
     const command: string = args.shift().toLowerCase();
 
-    if (command === 'ping') {
-        return await msg.reply('Pong!');
-    }
-
-    if (command === 'register') {
-        return await startRegistration(msg);
-    }
-
-    if (command === 'match') {
-        return await findMatch(msg);
-    }
-
-    if (command === 'privacy') {
-        return await privacy(msg);
-    }
-
-    if (command === 'profile') {
-        return await profile(msg);
-    }
-
-    if (command.startsWith('report')) {
-        return await report(msg);
+    if (!client.commands.has(command)) return;
+    try {
+        client.commands.get(command).execute(msg, args);
+    } catch (error) {
+        console.error(error);
+        msg.reply('er is iets fout gegaan.');
     }
 });
