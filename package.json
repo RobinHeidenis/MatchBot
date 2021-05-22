@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "start": "ts-node-dev index.ts"
+    "start": "ts-node-dev src/index.ts"
   },
   "dependencies": {
     "discord.js": "^12.5.1",

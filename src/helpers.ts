@@ -1,6 +1,6 @@
 import { Message, MessageEmbed } from 'discord.js';
 
-export const categories = {
+export const categories: { [key: number]: string } = {
     1: 'Iemand om mee te gamen',
     2: 'Gewoon gezellig praten',
     3: 'Muziek luisteren/maken',

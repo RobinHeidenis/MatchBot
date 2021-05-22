@@ -2,6 +2,13 @@ import { Message, MessageEmbed, MessageReaction, User } from 'discord.js';
 import { addUser, UserData, userExists } from '../user-manager';
 import { categories } from '../helpers';
 
+interface RegistrationQuestion {
+    question: string;
+    dataKey?: string;
+    answers?: string[];
+    timeLimit?: number;
+}
+
 export = {
     name: 'register',
     description: 'Maak een nieuw profiel aan. Op basis van dit profiel kan ik nieuwe mensen voor je zoeken.',
@@ -27,7 +34,7 @@ async function startRegistration(message: Message) {
 
 async function sendQuestion(message: Message, userData: UserData, questionNumber = 0) {
     // TODO: Increase time limit
-    const questions = [
+    const questions: RegistrationQuestion[] = [
         {
             question: 'Waar zoek je momenteel naar?',
             answers: Object.values(categories),
@@ -45,7 +52,7 @@ async function sendQuestion(message: Message, userData: UserData, questionNumber
         answers.forEach((answer, index) => {
             embed.addField(`${index + 1} ${answer}`, '\u200B');
         });
-        embed.addField(`Tijdslimiet: ${timeLimit / 1000}s`, '\u200B');
+        embed.addField(`Tijdslimiet: ${timeLimit! / 1000}s`, '\u200B');
     } else {
         embed.addField('Open vraag', '\u200B');
     }
@@ -74,6 +81,7 @@ async function sendQuestion(message: Message, userData: UserData, questionNumber
         await sentMsg.channel
             .awaitMessages((response) => response.content.length > 0, { max: 1 })
             .then((collected) => {
+                // @ts-ignore
                 userData[dataKey] = collected.first().content;
                 sendQuestion(message, userData, questionNumber + 1);
             });

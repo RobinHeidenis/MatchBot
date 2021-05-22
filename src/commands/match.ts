@@ -15,7 +15,7 @@ async function findMatch(message: Message) {
     if (!userExists(message.author)) {
         return await promptRegistration(message);
     }
-    const user = getUser(message.author.id);
+    const user = getUser(message.author.id)!;
 
     const users = getUsers().filter(({ id }) => id !== message.author.id);
     if (!users.length) {
@@ -41,7 +41,7 @@ function matchUser({ categories }: UserData, userPool: UserData[]): UserData & {
     const matches = userPool
         .map((potentialMatch) => ({
             ...potentialMatch,
-            matchCount: matchingElements(categories, potentialMatch.categories),
+            matchCount: matchingElements(categories!, potentialMatch.categories!),
         }))
         .sort((a, b) => b.matchCount - a.matchCount);
     // TODO: if this user profile has already been suggested, ignore it and pick the next best.

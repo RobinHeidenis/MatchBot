@@ -16,15 +16,15 @@ export = {
             'De informatie die je tijdens je registratie hebt ingevoerd.',
             {
                 name: 'Categorieën',
-                value: user.categories.map((categoryId) => categories[categoryId]).join(', '),
+                value: user?.categories?.map((categoryId) => categories[categoryId]).join(', ') ?? '\u200b',
             },
             {
                 name: 'Hobbies',
-                value: user.hobbies,
+                value: user?.hobbies ?? '\u200b',
             },
             {
                 name: 'Onderwerpen waar je graag over praat',
-                value: user.topics,
+                value: user?.topics ?? '\u200b',
             }
         );
         return message.author.send(embed);

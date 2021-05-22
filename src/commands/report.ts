@@ -2,7 +2,7 @@ import { Message } from 'discord.js';
 export = {
     name: 'report',
     description: 'Rapporteer een gebruiker.',
-    execute(message: Message, args?: string[]) {
+    execute(message: Message, args: string[]) {
         let userToReport = args[0];
         if (userToReport) {
             //TODO: add the reporter and reported to db.
