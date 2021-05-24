@@ -1,4 +1,4 @@
-import { Message, MessageEmbed, MessageReaction } from 'discord.js';
+import { Message, MessageEmbed, MessageReaction, User } from 'discord.js';
 import { addUser, userExists } from '../data-manager';
 import { categories } from '../helpers';
 import { UserData } from '../types';
@@ -60,12 +60,9 @@ async function sendQuestion(message: Message, userData: UserData, questionNumber
     const sentMsg = await message.author.send(embed);
 
     if (answers) {
-        await Promise.all(
-            multipleChoiceReactions.slice(0, answers.length).map(async (emoji) => await sentMsg.react(emoji))
-        );
-        await sentMsg.react('✅');
         const collector = sentMsg.createReactionCollector(
-            ({ emoji }) => multipleChoiceReactions.includes(emoji.name) || emoji.name === '✅'
+            ({ emoji }: MessageReaction, user: User) =>
+                user.id === message.author.id && [...multipleChoiceReactions, '✅'].includes(emoji.name)
         );
 
         collector.on('collect', (reaction, user) => {
@@ -82,6 +79,11 @@ async function sendQuestion(message: Message, userData: UserData, questionNumber
                 .map(({ emoji }: MessageReaction) => multipleChoiceReactions.indexOf(emoji.name) + 1);
             sendQuestion(message, userData, questionNumber + 1);
         });
+
+        await Promise.all(
+            multipleChoiceReactions.slice(0, answers.length).map(async (emoji) => await sentMsg.react(emoji))
+        );
+        await sentMsg.react('✅');
     } else {
         await sentMsg.channel
             .awaitMessages((response) => response.content.length > 0, { max: 1 })
