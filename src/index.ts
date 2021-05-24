@@ -1,8 +1,16 @@
 require('dotenv').config();
 import * as fs from 'fs';
 import { BotClient } from './types';
+import { possibleFriendshipCount } from './utils';
 const Discord = require('discord.js');
-const client = new Discord.Client() as BotClient;
+const client = new Discord.Client({
+    presence: {
+        activity: {
+            name: `${possibleFriendshipCount()} possible friendships unfold`,
+            type: 'WATCHING',
+        },
+    },
+}) as BotClient;
 client.commands = new Discord.Collection();
 
 const commandFiles = fs.readdirSync('src/commands').filter((file) => file.endsWith('.ts'));

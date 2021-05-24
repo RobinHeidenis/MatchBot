@@ -1,7 +1,8 @@
-import { Message, MessageEmbed, MessageReaction, User } from 'discord.js';
+import { Message, MessageEmbed, MessageReaction } from 'discord.js';
 import { addUser, userExists } from '../data-manager';
 import { categories } from '../helpers';
 import { UserData } from '../types';
+import { updateClientStatus } from '../utils';
 
 interface RegistrationQuestion {
     question: string;
@@ -44,7 +45,7 @@ async function sendQuestion(message: Message, userData: UserData, questionNumber
         { question: 'Waarover praat jij het liefst?', dataKey: 'topics' },
     ];
 
-    if (questionNumber > questions.length - 1) return await finishRegistration(message.author, userData);
+    if (questionNumber > questions.length - 1) return await finishRegistration(message, userData);
     const { question, dataKey, answers } = questions[questionNumber];
 
     const embed = new MessageEmbed().setTitle('Een vraag voor jou').setDescription(question);
@@ -92,9 +93,11 @@ async function sendQuestion(message: Message, userData: UserData, questionNumber
     }
 }
 
-async function finishRegistration(author: User, userData: UserData) {
+async function finishRegistration(message: Message, userData: UserData) {
     addUser(userData);
-    return await author.send(
+    updateClientStatus(message.client);
+
+    return await message.author.send(
         'Je registratie is voltooid. Vanaf nu heb je de mogelijkheid om via mij nieuwe mensen te ontmoeten. Gebruik `!match` om een match te vinden.'
     );
 }
