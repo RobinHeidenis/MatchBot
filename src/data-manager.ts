@@ -70,6 +70,12 @@ export function userExists({ id }: User | UserData): boolean {
     return user !== undefined;
 }
 
+export function deleteUser(userId: string) {
+    const data = readData();
+    data.users = data.users.filter(({ id }) => id !== userId);
+    fs.writeFileSync('./data.json', JSON.stringify(data, undefined, 4));
+}
+
 export function getMatches(userId: string): MatchInfo[] {
     const { matches } = readData();
     return matches
