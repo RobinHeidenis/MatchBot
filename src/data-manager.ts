@@ -49,7 +49,6 @@ function cleanseUser(user: UserData): UserData {
         categories: user.categories,
         hobbies: user.hobbies,
         topics: user.topics,
-        matches: user.matches,
     };
 }
 

@@ -1,6 +1,6 @@
 import { Message } from 'discord.js';
 import { categories, createEmbed, promptRegistration } from '../helpers';
-import { getUser, userExists } from '../data-manager';
+import { getMatches, getUser, userExists } from '../data-manager';
 
 export = {
     name: 'profile',
@@ -11,6 +11,7 @@ export = {
         }
         const user = getUser(message.author.id)!;
 
+        const matchCount = getMatches(user.id).length;
         const embed = createEmbed(
             'Jouw profiel',
             'De informatie die je tijdens je registratie hebt ingevoerd.',
@@ -28,7 +29,10 @@ export = {
             },
             {
                 name: 'Ontmoetingen',
-                value: `Je hebt ${user.matches.length} mensen leren kennen`,
+                value:
+                    matchCount > 0
+                        ? `Je hebt ${matchCount} ${matchCount === 1 ? 'persoon' : 'mensen'} leren kennen`
+                        : 'Je hebt nog niemand ontmoet',
             }
         );
         return message.author.send(embed);

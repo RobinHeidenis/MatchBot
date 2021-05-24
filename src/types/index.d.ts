@@ -15,7 +15,6 @@ interface UserData {
     categories?: number[];
     hobbies?: string;
     topics?: string;
-    matches: string[];
 }
 
 type Match = [userOne: string, userTwo: string];
