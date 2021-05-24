@@ -42,7 +42,7 @@ async function findMatch(message: Message) {
 
     const matchedUser = message.client.users.cache.get(match.id)!;
     await matchedUser.send(
-        `Je bent gematcht met <@${user.id}>!\nHun hobbies zijn \`${user.hobbies}\` en ze vinden het leuk om te praten over \`${user.topics}\``
+        `Je bent gematcht met <@${user.id}>!\nHun interesses zijn \`${user.interests}\` en ze vinden het leuk om te praten over \`${user.topics}\``
     );
 }
 

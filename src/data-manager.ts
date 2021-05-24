@@ -47,7 +47,7 @@ function cleanseUser(user: UserData): UserData {
     return {
         id: user.id,
         categories: user.categories,
-        hobbies: user.hobbies,
+        interests: user.interests,
         topics: user.topics,
     };
 }

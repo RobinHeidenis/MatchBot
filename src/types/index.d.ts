@@ -13,7 +13,7 @@ interface BotClient extends Client {
 interface UserData {
     id: string;
     categories?: number[];
-    hobbies?: string;
+    interests?: string;
     topics?: string;
 }
 

@@ -40,7 +40,7 @@ async function sendQuestion(message: Message, userData: UserData, questionNumber
             question: 'Waar zoek je momenteel naar?',
             answers: Object.values(categories),
         },
-        { question: 'Wat zijn je hobbies?', dataKey: 'hobbies' },
+        { question: 'Wat zijn je interesses?', dataKey: 'interests' },
         { question: 'Waarover praat jij het liefst?', dataKey: 'topics' },
     ];
 
