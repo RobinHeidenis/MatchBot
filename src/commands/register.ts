@@ -65,10 +65,14 @@ async function sendQuestion(message: Message, userData: UserData, questionNumber
                 user.id === message.author.id && [...multipleChoiceReactions, '✅'].includes(emoji.name)
         );
 
-        collector.on('collect', (reaction, user) => {
+        collector.on('collect', async (reaction, user) => {
             console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
             if (reaction.emoji.name === '✅') {
-                collector.stop();
+                if (collector.collected.filter(({ emoji }) => emoji.name !== '✅').size) {
+                    collector.stop();
+                } else {
+                    await message.author.send('Selecteer minstens één antwoord en probeer het opnieuw');
+                }
             }
         });
 
@@ -86,7 +90,9 @@ async function sendQuestion(message: Message, userData: UserData, questionNumber
         await sentMsg.react('✅');
     } else {
         await sentMsg.channel
-            .awaitMessages((response) => response.content.length > 0, { max: 1 })
+            .awaitMessages((response) => response.author.id === message.author.id && response.content.length > 0, {
+                max: 1,
+            })
             .then((collected) => {
                 // @ts-ignore
                 userData[dataKey] = collected.first().content;
