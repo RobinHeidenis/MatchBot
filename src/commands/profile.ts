@@ -20,8 +20,8 @@ export = {
                 value: user.categories?.map((categoryId) => categories[categoryId]).join(', ') ?? '\u200b',
             },
             {
-                name: 'Hobbies',
-                value: user.hobbies ?? '\u200b',
+                name: 'Interesses',
+                value: user.interests ?? '\u200b',
             },
             {
                 name: 'Onderwerpen waar je graag over praat',

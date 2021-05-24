@@ -47,7 +47,7 @@ function cleanseUser(user: UserData): UserData {
     return {
         id: user.id,
         categories: user.categories,
-        hobbies: user.hobbies,
+        interests: user.interests,
         topics: user.topics,
     };
 }
@@ -70,6 +70,12 @@ export function userExists({ id }: User | UserData): boolean {
     return user !== undefined;
 }
 
+export function deleteUser(userId: string) {
+    const data = readData();
+    data.users = data.users.filter(({ id }) => id !== userId);
+    fs.writeFileSync('./data.json', JSON.stringify(data, undefined, 4));
+}
+
 export function getMatches(userId: string): MatchInfo[] {
     const { matches } = readData();
     return matches
@@ -80,4 +86,8 @@ export function getMatches(userId: string): MatchInfo[] {
                 date: new Date(matchInfo.date),
             };
         });
+}
+
+export function getTotalMatchCount(): number {
+    return readData().matches.length;
 }

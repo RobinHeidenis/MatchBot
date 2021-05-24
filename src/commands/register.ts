@@ -2,13 +2,15 @@ import { Message, MessageEmbed, MessageReaction, User } from 'discord.js';
 import { addUser, userExists } from '../data-manager';
 import { categories } from '../helpers';
 import { UserData } from '../types';
+import { updateClientStatus } from '../utils';
 
 interface RegistrationQuestion {
     question: string;
     dataKey?: string;
     answers?: string[];
-    timeLimit?: number;
 }
+
+const multipleChoiceReactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣'];
 
 export = {
     name: 'register',
@@ -34,53 +36,63 @@ async function startRegistration(message: Message) {
 }
 
 async function sendQuestion(message: Message, userData: UserData, questionNumber = 0) {
-    // TODO: Increase time limit
     const questions: RegistrationQuestion[] = [
         {
             question: 'Waar zoek je momenteel naar?',
             answers: Object.values(categories),
-            timeLimit: 15000,
         },
-        { question: 'Wat zijn je hobbies?', dataKey: 'hobbies' },
+        { question: 'Wat zijn je interesses?', dataKey: 'interests' },
         { question: 'Waarover praat jij het liefst?', dataKey: 'topics' },
     ];
 
-    if (questionNumber > questions.length - 1) return await finishRegistration(message.author, userData);
-    const { question, dataKey, answers, timeLimit } = questions[questionNumber];
+    if (questionNumber > questions.length - 1) return await finishRegistration(message, userData);
+    const { question, dataKey, answers } = questions[questionNumber];
 
     const embed = new MessageEmbed().setTitle('Een vraag voor jou').setDescription(question);
     if (answers) {
         answers.forEach((answer, index) => {
-            embed.addField(`${index + 1} ${answer}`, '\u200B');
+            embed.addField(`${multipleChoiceReactions[index]} ${answer}`, '\u200B');
         });
-        embed.addField(`Tijdslimiet: ${timeLimit! / 1000}s`, '\u200B');
+        embed.setFooter('Klik op ✅ om je antwoorden op te slaan.');
     } else {
-        embed.addField('Open vraag', '\u200B');
+        embed.setFooter('Dit is een open vraag, druk op enter om je antwoord op te slaan.');
     }
     const sentMsg = await message.author.send(embed);
 
     if (answers) {
-        const reactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣'];
+        const collector = sentMsg.createReactionCollector(
+            ({ emoji }: MessageReaction, user: User) =>
+                user.id === message.author.id && [...multipleChoiceReactions, '✅'].includes(emoji.name)
+        );
 
-        await Promise.all(reactions.slice(0, answers.length).map(async (emoji) => await sentMsg.react(emoji)));
-        const collector = sentMsg.createReactionCollector(({ emoji }) => reactions.includes(emoji.name), {
-            time: timeLimit,
-        });
-
-        collector.on('collect', (reaction, user) => {
+        collector.on('collect', async (reaction, user) => {
             console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
+            if (reaction.emoji.name === '✅') {
+                if (collector.collected.filter(({ emoji }) => emoji.name !== '✅').size) {
+                    collector.stop();
+                } else {
+                    await message.author.send('Selecteer minstens één antwoord en probeer het opnieuw');
+                }
+            }
         });
 
         collector.on('end', (collected) => {
             console.log(`Collected ${collected.size} items`);
-            userData.categories = collected.map(
-                (reaction: MessageReaction) => reactions.indexOf(reaction.emoji.name) + 1
-            );
+            userData.categories = collected
+                .filter(({ emoji }: MessageReaction) => emoji.name !== '✅')
+                .map(({ emoji }: MessageReaction) => multipleChoiceReactions.indexOf(emoji.name) + 1);
             sendQuestion(message, userData, questionNumber + 1);
         });
+
+        await Promise.all(
+            multipleChoiceReactions.slice(0, answers.length).map(async (emoji) => await sentMsg.react(emoji))
+        );
+        await sentMsg.react('✅');
     } else {
         await sentMsg.channel
-            .awaitMessages((response) => response.content.length > 0, { max: 1 })
+            .awaitMessages((response) => response.author.id === message.author.id && response.content.length > 0, {
+                max: 1,
+            })
             .then((collected) => {
                 // @ts-ignore
                 userData[dataKey] = collected.first().content;
@@ -89,9 +101,11 @@ async function sendQuestion(message: Message, userData: UserData, questionNumber
     }
 }
 
-async function finishRegistration(author: User, userData: UserData) {
+async function finishRegistration(message: Message, userData: UserData) {
     addUser(userData);
-    return await author.send(
+    updateClientStatus(message.client);
+
+    return await message.author.send(
         'Je registratie is voltooid. Vanaf nu heb je de mogelijkheid om via mij nieuwe mensen te ontmoeten. Gebruik `!match` om een match te vinden.'
     );
 }
