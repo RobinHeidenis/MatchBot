@@ -87,3 +87,7 @@ export function getMatches(userId: string): MatchInfo[] {
             };
         });
 }
+
+export function getTotalMatchCount(): number {
+    return readData().matches.length;
+}
