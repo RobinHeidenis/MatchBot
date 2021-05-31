@@ -104,7 +104,7 @@ async function sendQuestion(message: Message, userData: UserData, questionNumber
 async function finishRegistration(message: Message, userData: UserData) {
     addUser(userData);
     updateClientStatus(message.client);
-
+    console.log(`Registration complete - @${message.author.tag} now has a profile`);
     return await message.author.send(
         'Je registratie is voltooid. Vanaf nu heb je de mogelijkheid om via mij nieuwe mensen te ontmoeten. Gebruik `!match` om een match te vinden.'
     );

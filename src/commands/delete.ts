@@ -30,6 +30,7 @@ export = {
             } else if (choice === '✅') {
                 deleteUser(message.author.id);
                 updateClientStatus(message.client);
+                console.log(`@${message.author.tag} deleted their profile`);
                 return message.author.send('Ik heb je profiel succesvol verwijderd.');
             }
         });
