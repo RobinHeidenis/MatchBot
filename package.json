@@ -4,7 +4,7 @@
     "start": "ts-node-dev src/index.ts"
   },
   "dependencies": {
-    "discord.js": "^12.5.1",
+    "discord.js": "^13.0.0-dev.99ff7151379fe03a1cfd52f252c0e6fc892d7776",
     "dotenv": "^9.0.2"
   },
   "devDependencies": {
