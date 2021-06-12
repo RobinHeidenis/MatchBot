@@ -3,7 +3,7 @@ import { Message, MessageEmbed } from 'discord.js';
 const categories: { [key: number]: string } = {
     1: 'Iemand om mee te gamen',
     2: 'Gewoon gezellig praten',
-    3: 'Muziek luisteren/maken',
+    3: 'Muziek luisteren of maken',
 };
 
 interface RegistrationQuestion {

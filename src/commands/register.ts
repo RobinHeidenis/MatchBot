@@ -52,9 +52,9 @@ async function sendQuestion(user: User, client: Client, userData: UserData, ques
         answers.forEach((answer, index) => {
             embed.addField(`${multipleChoiceReactions[index]} ${answer}`, '\u200B');
         });
-        embed.setDescription('Klik op het groene vinkje om je antwoorden op te slaan.');
+        embed.setDescription('Klik op het groene vinkje om je antwoord(en) op te slaan.');
     } else {
-        embed.setDescription('Dit is een open vraag, druk op enter om je antwoord op te slaan.');
+        embed.setDescription('Dit is een open vraag, druk op Enter om je antwoord op te slaan.');
     }
     const sentMsg = await user.send({ embeds: [embed] });
 
