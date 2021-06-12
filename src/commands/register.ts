@@ -47,16 +47,14 @@ async function sendQuestion(user: User, client: Client, userData: UserData, ques
 
     const { question, dataKey, answers } = questions[questionNumber];
 
-    const embed = new MessageEmbed()
-        .setTitle(`Vraag ${questionNumber + 1}/${questions.length}`)
-        .setDescription(question);
+    const embed = new MessageEmbed().setTitle(question).setFooter(`Vraag ${questionNumber + 1}/${questions.length}`);
     if (answers) {
         answers.forEach((answer, index) => {
             embed.addField(`${multipleChoiceReactions[index]} ${answer}`, '\u200B');
         });
-        embed.setFooter('Klik op ✅ om je antwoorden op te slaan.');
+        embed.setDescription('Klik op het groene vinkje om je antwoorden op te slaan.');
     } else {
-        embed.setFooter('Dit is een open vraag, druk op enter om je antwoord op te slaan.');
+        embed.setDescription('Dit is een open vraag, druk op enter om je antwoord op te slaan.');
     }
     const sentMsg = await user.send({ embeds: [embed] });
 
