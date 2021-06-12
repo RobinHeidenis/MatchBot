@@ -1,14 +1,8 @@
 import { Message, MessageEmbed, MessageReaction, User } from 'discord.js';
 import { addUser, userExists } from '../data-manager';
-import { categories } from '../helpers';
+import { questions } from '../helpers';
 import { UserData } from '../types';
 import { updateClientStatus } from '../utils';
-
-interface RegistrationQuestion {
-    question: string;
-    dataKey?: string;
-    answers?: string[];
-}
 
 const multipleChoiceReactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣'];
 
@@ -34,16 +28,8 @@ async function startRegistration(message: Message) {
 }
 
 async function sendQuestion(message: Message, userData: UserData, questionNumber = 0) {
-    const questions: RegistrationQuestion[] = [
-        {
-            question: 'Waar zoek je momenteel naar?',
-            answers: Object.values(categories),
-        },
-        { question: 'Wat zijn je interesses?', dataKey: 'interests' },
-        { question: 'Waarover praat jij het liefst?', dataKey: 'topics' },
-    ];
-
     if (questionNumber > questions.length - 1) return await finishRegistration(message, userData);
+
     const { question, dataKey, answers } = questions[questionNumber];
 
     const embed = new MessageEmbed().setTitle('Een vraag voor jou').setDescription(question);

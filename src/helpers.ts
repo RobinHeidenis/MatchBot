@@ -1,10 +1,25 @@
 import { Message, MessageEmbed } from 'discord.js';
 
-export const categories: { [key: number]: string } = {
+const categories: { [key: number]: string } = {
     1: 'Iemand om mee te gamen',
     2: 'Gewoon gezellig praten',
     3: 'Muziek luisteren/maken',
 };
+
+interface RegistrationQuestion {
+    question: string;
+    dataKey?: string;
+    answers?: string[];
+}
+
+export const questions: RegistrationQuestion[] = [
+    {
+        question: 'Waar zoek je momenteel naar?',
+        answers: Object.values(categories),
+    },
+    { question: 'Wat zijn je interesses?', dataKey: 'interests' },
+    { question: 'Waarover praat jij het liefst?', dataKey: 'topics' },
+];
 
 export async function promptRegistration(message: Message) {
     return message.author.send(
