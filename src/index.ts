@@ -3,6 +3,7 @@ import { Intents } from 'discord.js';
 import * as fs from 'fs';
 import { BotClient } from './types';
 import { possibleFriendshipCount } from './utils';
+
 const Discord = require('discord.js');
 const client = new Discord.Client({
     presence: {
@@ -19,6 +20,14 @@ const commandFiles = fs.readdirSync('src/commands').filter((file) => file.endsWi
 for (const file of commandFiles) {
     const command = require(`./commands/${file}`);
     client.commands.set(command.name, command);
+}
+
+// blatant duplicate of command setup, too lazy to clean this up as these final changes are only for the research project
+client.interactions = new Discord.Collection();
+const interactionFiles = fs.readdirSync('src/interactions').filter((file) => file.endsWith('.ts'));
+for (const file of interactionFiles) {
+    const action = require(`./interactions/${file}`);
+    client.interactions.set(action.name, action);
 }
 
 export const prefix = '!';
@@ -42,4 +51,35 @@ client.on('message', async (msg) => {
         console.error(error);
         msg.reply('er is iets fout gegaan.');
     }
+});
+
+client.on('interaction', async (interaction) => {
+    if (!interaction.isCommand()) return;
+
+    if (!client.commands.has(interaction.commandName)) return;
+
+    try {
+        client.commands.get(interaction.commandName)?.execute(interaction);
+    } catch (error) {
+        console.error(error);
+        await interaction.reply({ ephemeral: true, content: 'er is iets fout gegaan.' });
+    }
+});
+
+client.on('interaction', async (interaction) => {
+    if (!interaction.isMessageComponent()) return;
+
+    if (
+        !client.interactions.has(interaction.customID) ||
+        !client.interactions.some(({ name }) => name.startsWith(interaction.customID))
+    )
+        return;
+
+    try {
+        client.interactions.get(interaction.customID)?.execute(interaction);
+    } catch (error) {
+        console.error(error);
+        await interaction.reply({ ephemeral: true, content: 'er is iets fout gegaan.' });
+    }
+    return;
 });

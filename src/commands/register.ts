@@ -1,4 +1,13 @@
-import { Message, MessageEmbed, MessageReaction, User } from 'discord.js';
+import {
+    CommandInteraction,
+    Interaction,
+    MessageEmbed,
+    MessageReaction,
+    User,
+    Client,
+    MessageActionRow,
+    MessageButton,
+} from 'discord.js';
 import { addUser, userExists } from '../data-manager';
 import { questions } from '../helpers';
 import { UserData } from '../types';
@@ -9,36 +18,32 @@ const multipleChoiceReactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5�
 export = {
     name: 'register',
     description: 'Maak een nieuw profiel aan. Op basis van dit profiel kan ik nieuwe mensen voor je zoeken.',
-    execute(message: Message) {
-        if (userExists(message.author)) {
-            return message.author.send(
-                'Je bent al geregistreerd. Gebruik `!match` om te beginnen met nieuwe mensen ontmoeten!'
-            );
+    async execute(interaction: CommandInteraction) {
+        if (userExists(interaction.user.id)) {
+            return interaction.reply({
+                ephemeral: true,
+                content: 'Je bent al geregistreerd. Gebruik `!match` om te beginnen met nieuwe mensen ontmoeten!',
+            });
         }
+        const row = new MessageActionRow().addComponents(
+            new MessageButton({ customID: 'understoodIntro', label: 'Ik heb de tekst gelezen', style: 'PRIMARY' })
+        );
 
-        return startRegistration(message);
+        await interaction.reply({
+            ephemeral: true,
+            content: `Hi! Ik ben ${interaction.client.user?.username} en ik ben hier om jou met een andere persoon te matchen die dezelfde interesses als jij heeft.\nGebruik \`!privacy\` als je meer wilt weten over de gegevens die ik verzamel en wat ik daarmee doe. Je kan \`!help\` typen om de hulppagina te zien.\nMisbruik van deze bot of van mensen die je via deze bot ontmoet, wordt niet getolereerd en je kan volledig verbannen worden van het gebruik van deze bot. Je kan \`!report gebruiker#1234\` typen om een specifieke gebruiker te rapporteren. Veel plezier!\n\nJe krijgt straks ${questions.length} vragen voorgelegd. Zodra je op de knop klikt, begint de registratie.`,
+            components: [row],
+        });
     },
+    begin,
 };
 
-async function startRegistration(message: Message) {
-    const sentMsg = await message.author.send(
-        `Hi! Ik ben ${message.client.user?.username} en ik ben hier om jou met een andere persoon te matchen die dezelfde interesses als jij heeft.\nGebruik \`!privacy\` als je meer wilt weten over de gegevens die ik verzamel en wat ik daarmee doe. Je kan \`!help\` typen om de hulppagina te zien.\nMisbruik van deze bot of van mensen die je via deze bot ontmoet, wordt niet getolereerd en je kan volledig verbannen worden van het gebruik van deze bot. Je kan \`!report gebruiker#1234\` typen om een specifieke gebruiker te rapporteren. Veel plezier!\n\nJe krijgt straks ${questions.length} vragen voorgelegd. Zodra je op het groene vinkje klikt, begint de registratie.`
-    );
-    await sentMsg.react('✅');
-    const collector = sentMsg.createReactionCollector(
-        ({ emoji }: MessageReaction, user: User) => user.id === message.author.id && '✅' === emoji.name
-    );
-
-    collector.on('collect', async (reaction, user) => {
-        console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
-        collector.stop();
-
-        await sendQuestion(message, { id: message.author.id, categories: [] });
-    });
+async function begin(interaction: Interaction) {
+    return await sendQuestion(interaction.user, interaction.client, { id: interaction.user.id, categories: [] });
 }
 
-async function sendQuestion(message: Message, userData: UserData, questionNumber = 0) {
-    if (questionNumber > questions.length - 1) return await finishRegistration(message, userData);
+async function sendQuestion(user: User, client: Client, userData: UserData, questionNumber = 0) {
+    if (questionNumber > questions.length - 1) return await finishRegistration(user, client, userData);
 
     const { question, dataKey, answers } = questions[questionNumber];
 
@@ -53,12 +58,12 @@ async function sendQuestion(message: Message, userData: UserData, questionNumber
     } else {
         embed.setFooter('Dit is een open vraag, druk op enter om je antwoord op te slaan.');
     }
-    const sentMsg = await message.author.send(embed);
+    const sentMsg = await user.send({ embeds: [embed] });
 
     if (answers) {
         const collector = sentMsg.createReactionCollector(
             ({ emoji }: MessageReaction, user: User) =>
-                user.id === message.author.id && [...multipleChoiceReactions, '✅'].includes(emoji.name)
+                !user.bot && [...multipleChoiceReactions, '✅'].includes(emoji.name!)
         );
 
         collector.on('collect', async (reaction, user) => {
@@ -67,7 +72,7 @@ async function sendQuestion(message: Message, userData: UserData, questionNumber
                 if (collector.collected.filter(({ emoji }) => emoji.name !== '✅').size) {
                     collector.stop();
                 } else {
-                    await message.author.send('Selecteer minstens één antwoord en probeer het opnieuw');
+                    await user.send('Selecteer minstens één antwoord en probeer het opnieuw');
                 }
             }
         });
@@ -76,8 +81,8 @@ async function sendQuestion(message: Message, userData: UserData, questionNumber
             console.log(`Collected ${collected.size} items`);
             userData.categories = collected
                 .filter(({ emoji }: MessageReaction) => emoji.name !== '✅')
-                .map(({ emoji }: MessageReaction) => multipleChoiceReactions.indexOf(emoji.name) + 1);
-            sendQuestion(message, userData, questionNumber + 1);
+                .map(({ emoji }: MessageReaction) => multipleChoiceReactions.indexOf(emoji.name!) + 1);
+            sendQuestion(user, client, userData, questionNumber + 1);
         });
 
         await Promise.all(
@@ -86,22 +91,22 @@ async function sendQuestion(message: Message, userData: UserData, questionNumber
         await sentMsg.react('✅');
     } else {
         await sentMsg.channel
-            .awaitMessages((response) => response.author.id === message.author.id && response.content.length > 0, {
+            .awaitMessages((response) => response.author.id === user.id && response.content.length > 0, {
                 max: 1,
             })
             .then((collected) => {
                 // @ts-ignore
                 userData[dataKey] = collected.first().content;
-                sendQuestion(message, userData, questionNumber + 1);
+                sendQuestion(user, client, userData, questionNumber + 1);
             });
     }
 }
 
-async function finishRegistration(message: Message, userData: UserData) {
+async function finishRegistration(user: User, client: Client, userData: UserData) {
     addUser(userData);
-    updateBotStatus(message.client);
+    updateBotStatus(client);
 
-    return await message.author.send(
+    return await user.send(
         'Je registratie is voltooid. Vanaf nu heb je de mogelijkheid om via mij nieuwe mensen te ontmoeten. Gebruik `!match` om een match te vinden.'
     );
 }
