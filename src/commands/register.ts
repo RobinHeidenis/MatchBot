@@ -33,7 +33,9 @@ async function sendQuestion(message: Message, userData: UserData, questionNumber
 
     const { question, dataKey, answers } = questions[questionNumber];
 
-    const embed = new MessageEmbed().setTitle('Een vraag voor jou').setDescription(question);
+    const embed = new MessageEmbed()
+        .setTitle(`Vraag ${questionNumber + 1}/${questions.length}`)
+        .setDescription(question);
     if (answers) {
         answers.forEach((answer, index) => {
             embed.addField(`${multipleChoiceReactions[index]} ${answer}`, '\u200B');
