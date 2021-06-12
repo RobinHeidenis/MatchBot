@@ -21,6 +21,7 @@ export = {
                         customID: 'startRegistration',
                         label: 'Je bent akkoord gegaan',
                         style: 'SUCCESS',
+                        disabled: true,
                     })
                 ),
             ],
