@@ -6,7 +6,7 @@ export = {
     name: 'delete',
     description: 'Verwijder jouw profiel',
     async execute(message: Message) {
-        if (!userExists(message.author)) {
+        if (!userExists(message.author.id)) {
             return await message.author.send('Je hebt geen profiel.');
         }
         const sentMsg = await message.author.send('Weet je zeker dat je je account wilt verwijderen?');

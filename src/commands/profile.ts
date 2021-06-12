@@ -6,7 +6,7 @@ export = {
     name: 'profile',
     description: 'Toon jouw profiel',
     async execute(message: Message) {
-        if (!userExists(message.author)) {
+        if (!userExists(message.author.id)) {
             return await promptRegistration(message);
         }
         const user = getUser(message.author.id)!;

@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import { User } from 'discord.js';
 import { Match, MatchInfo, UserData } from './types';
 
 interface Data {
@@ -17,7 +16,7 @@ export function addUser(user: UserData) {
 
 export function updateUser(userToUpdate: UserData) {
     const user = cleanseUser(userToUpdate);
-    if (!userExists(user)) {
+    if (!userExists(user.id)) {
         return addUser(user);
     }
     const data = readData();
@@ -65,7 +64,7 @@ export function getUser(userId: string): UserData | undefined {
     return readData().users.find((user) => user.id === userId);
 }
 
-export function userExists({ id }: User | UserData): boolean {
+export function userExists(id: string): boolean {
     const user = getUser(id);
     return user !== undefined;
 }
