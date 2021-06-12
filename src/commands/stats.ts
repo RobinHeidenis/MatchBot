@@ -25,6 +25,6 @@ export = {
         );
         updateBotStatus(message.client);
         embed.setFooter(`Data van ${new Date().toLocaleString('nl-NL')}`);
-        return message.author.send(embed);
+        return message.author.send({ embeds: [embed] });
     },
 };

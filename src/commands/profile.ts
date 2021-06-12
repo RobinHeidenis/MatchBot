@@ -35,6 +35,6 @@ export = {
                         : 'Je hebt nog niemand ontmoet',
             }
         );
-        return message.author.send(embed);
+        return message.author.send({ embeds: [embed] });
     },
 };

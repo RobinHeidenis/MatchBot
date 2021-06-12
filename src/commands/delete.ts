@@ -12,7 +12,7 @@ export = {
         const sentMsg = await message.author.send('Weet je zeker dat je je account wilt verwijderen?');
         const options = ['❌', '✅'];
         await Promise.all(options.map(async (emoji) => await sentMsg.react(emoji)));
-        const collector = sentMsg.createReactionCollector(({ emoji }) => ['✅', '❌'].includes(emoji.name), {
+        const collector = sentMsg.createReactionCollector(({ emoji }) => ['✅', '❌'].includes(emoji.name!), {
             time: 30000,
         });
 

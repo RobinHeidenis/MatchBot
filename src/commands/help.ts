@@ -13,16 +13,19 @@ export = {
             data.push(commands.map((command) => command.name).join(', '));
             data.push(`\nJe kan \`${prefix}help [command]\` gebruiken om meer info over dat command te krijgen.`);
 
-            return message.author
-                .send(data, { split: true })
-                .then(() => {
-                    if (message.channel.type === 'dm') return;
-                    message.reply("Ik heb je ge-DM'd!");
-                })
-                .catch((error) => {
-                    console.error(`Could not send help DM to ${message.author.tag}.\n`, error);
-                    message.reply("ik kan niet in je DM's sliden... heb je ze uitstaan?");
-                });
+            return (
+                message.author
+                    // TODO: discord.js v13 removed support for send(data, { split: true }). This is a workaround, but it's broken :)
+                    .send(data.join('\n'))
+                    .then(() => {
+                        if (message.channel.type === 'dm') return;
+                        message.reply("Ik heb je ge-DM'd!");
+                    })
+                    .catch((error) => {
+                        console.error(`Could not send help DM to ${message.author.tag}.\n`, error);
+                        message.reply("ik kan niet in je DM's sliden... heb je ze uitstaan?");
+                    })
+            );
         }
 
         const name = args[0].toLowerCase();
@@ -31,6 +34,7 @@ export = {
         data.push(`**Naam:** ${command.name}`);
         data.push(`**Beschrijving:** ${command.description}`);
 
-        return message.channel.send(data, { split: true });
+        // TODO: discord.js v13 removed support for send(data, { split: true }). This is a workaround, but it's broken :)
+        return message.channel.send(data.join('\n'));
     },
 };

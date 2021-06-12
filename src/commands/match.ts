@@ -40,7 +40,7 @@ async function findMatch(message: Message) {
             .join(' en ')} geselecteerd als categorie!.\nStuur ze een bericht :)`
     );
 
-    const matchedUser = message.client.users.cache.get(match.id)!;
+    const matchedUser = message.client.users.cache.get(match.id as `${bigint}`)!;
     await matchedUser.send(
         `Je bent gematcht met <@${user.id}>!\nHun interesses zijn \`${user.interests}\` en ze vinden het leuk om te praten over \`${user.topics}\``
     );

@@ -1,4 +1,5 @@
 require('dotenv').config();
+import { Intents } from 'discord.js';
 import * as fs from 'fs';
 import { BotClient } from './types';
 import { possibleFriendshipCount } from './utils';
@@ -10,6 +11,7 @@ const client = new Discord.Client({
             type: 'WATCHING',
         },
     },
+    intents: [Intents.ALL],
 }) as BotClient;
 client.commands = new Discord.Collection();
 

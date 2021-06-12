@@ -1,4 +1,4 @@
-import { Message } from 'discord.js';
+import { Message, MessageEmbed } from 'discord.js';
 import { getMatches } from '../data-manager';
 import { createEmbed } from '../helpers';
 
@@ -17,6 +17,6 @@ export = {
                 value: `<@${matchInfo.user}>`,
             }))
         );
-        return message.author.send(embed);
+        return message.author.send({ embeds: [embed] });
     },
 };
