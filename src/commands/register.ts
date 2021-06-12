@@ -2,7 +2,7 @@ import { Message, MessageEmbed, MessageReaction, User } from 'discord.js';
 import { addUser, userExists } from '../data-manager';
 import { questions } from '../helpers';
 import { UserData } from '../types';
-import { updateClientStatus } from '../utils';
+import { updateBotStatus } from '../utils';
 
 const multipleChoiceReactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣'];
 
@@ -87,7 +87,7 @@ async function sendQuestion(message: Message, userData: UserData, questionNumber
 
 async function finishRegistration(message: Message, userData: UserData) {
     addUser(userData);
-    updateClientStatus(message.client);
+    updateBotStatus(message.client);
 
     return await message.author.send(
         'Je registratie is voltooid. Vanaf nu heb je de mogelijkheid om via mij nieuwe mensen te ontmoeten. Gebruik `!match` om een match te vinden.'

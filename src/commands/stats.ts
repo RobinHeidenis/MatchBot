@@ -1,7 +1,7 @@
 import { Message } from 'discord.js';
 import { createEmbed } from '../helpers';
 import { getMatches, getTotalMatchCount, getUsers } from '../data-manager';
-import { updateClientStatus } from '../utils';
+import { updateBotStatus } from '../utils';
 
 export = {
     name: 'stats',
@@ -23,7 +23,7 @@ export = {
                 value: (getUsers().length - getMatches(message.author.id).length).toString(),
             }
         );
-        updateClientStatus(message.client);
+        updateBotStatus(message.client);
         embed.setFooter(`Data van ${new Date().toLocaleString('nl-NL')}`);
         return message.author.send(embed);
     },

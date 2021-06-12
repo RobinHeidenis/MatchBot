@@ -20,8 +20,8 @@ export function possibleFriendshipCount(): number {
     return +(allCombinations(getUsers()).length * 13.25).toFixed();
 }
 
-export function updateClientStatus(client: Client): void {
-    client.user?.setActivity({
+export function updateBotStatus({ user }: Client): void {
+    user?.setActivity({
         name: `${possibleFriendshipCount()} possible friendships unfold`,
         type: 'WATCHING',
     });

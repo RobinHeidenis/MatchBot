@@ -1,6 +1,6 @@
 import { Message } from 'discord.js';
 import { deleteUser, userExists } from '../data-manager';
-import { updateClientStatus } from '../utils';
+import { updateBotStatus } from '../utils';
 
 export = {
     name: 'delete',
@@ -29,7 +29,7 @@ export = {
                 return message.author.send('Je profiel is niet verwijderd.');
             } else if (choice === '✅') {
                 deleteUser(message.author.id);
-                updateClientStatus(message.client);
+                updateBotStatus(message.client);
                 return message.author.send('Ik heb je profiel succesvol verwijderd.');
             }
         });
